@@ -11,11 +11,6 @@ function getLocationFromRequest(request: Request): Location | null {
   return isLocation(location) ? location : null
 }
 
-import { NextResponse } from 'next/server'
-
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
 export async function GET() {
   return NextResponse.json({
     ok: true,
