@@ -11,39 +11,16 @@ function getLocationFromRequest(request: Request): Location | null {
   return isLocation(location) ? location : null
 }
 
-export async function GET(request: Request) {
-  const location = getLocationFromRequest(request)
-  if (!location) return NextResponse.json({ error: 'Unknown location' }, { status: 400 })
+import { NextResponse } from 'next/server'
 
-  const supabase = createSupabaseAdminClient()
-  const { data: activity, error: activityError } = await supabase
-    .from('activities')
-    .select('id, grid_size, timer_duration_seconds, status, started_at, ends_at')
-    .eq('location', location)
-    .single()
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-  if (activityError) return NextResponse.json({ error: 'Unable to load activity' }, { status: 500 })
-
-  const { data: cells, error: cellsError } = await supabase
-    .from('cells')
-    .select('row, col, color')
-    .eq('activity_id', activity.id)
-    .order('created_at', { ascending: true })
-
-  if (cellsError) return NextResponse.json({ error: 'Unable to load canvas' }, { status: 500 })
-
-  // Tallies are additive to the core canvas — if the word_tallies table or
-  // RPC hasn't been migrated in yet, degrade to all-zero counts rather than
-  // failing the whole canvas load.
-  const { data: tallyRows } = await supabase
-    .from('word_tallies')
-    .select('word, count')
-    .eq('activity_id', activity.id)
-
-  const tallies = Object.fromEntries(WORDS.map((word) => [word, 0])) as Record<string, number>
-  for (const row of tallyRows ?? []) tallies[row.word] = row.count
-
-  return NextResponse.json({ activity, cells, tallies })
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    message: 'API is working',
+  })
 }
 
 export async function POST(request: Request) {
